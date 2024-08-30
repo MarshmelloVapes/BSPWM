@@ -1,23 +1,19 @@
-let mapleader =" "
+let mapleader =";"
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
 
 " Html/JSX stuff
 Plug 'alvan/vim-closetag'
-Plug 'pangloss/vim-javascript'
+Plug 'yuezk/vim-js'
 Plug 'leafgarland/typescript-vim'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'styled-components/vim-styled-components'
 
 " Snippets
 Plug 'honza/vim-snippets'
-Plug 'natebosch/dartlang-snippets'
 
-" Dart
-Plug 'dart-lang/dart-vim-plugin'
-Plug 'thosakwe/vim-flutter'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'jiangmiao/auto-pairs'
+" Rust
+Plug 'rust-lang/rust.vim'
 
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-surround'
@@ -27,6 +23,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'preservim/nerdtree'
 Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 Plug 'jreybert/vimagit'
 Plug 'lukesmithxyz/vimling'
@@ -36,40 +33,16 @@ Plug 'tpope/vim-commentary'
 Plug 'ap/vim-css-color'
 call plug#end()
 
-" Dart
-nnoremap <leader>fa :FlutterRun<cr>
-nnoremap <leader>fq :FlutterQuit<cr>
-nnoremap <leader>fr :FlutterHotReload<cr>
-nnoremap <leader>fR :FlutterHotRestart<cr>
-nnoremap <leader>fD :FlutterVisualDebug<cr>
-
-let g:dart_format_on_save = 1
-let g:dartfmt_options = ['--fix', '--line-length 120']
-
-"-Cocc
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-
-nmap <leader>rn <Plug>(coc-rename)
-
-let g:coc_global_extensions = [
-  \ 'coc-snippets',
-  \ 'coc-flutter',
-  \ ]
-
-imap <tab> <Plug>(coc-snippets-expand)
-let g:UltiSnipsExpandTrigger = '<Nop>'
-let g:coc_snippet_next = '<TAB>'
-let g:coc_snippet_prev = '<S-TAB>'
+" Rust
+let g:rustfmt_autosave = 1
 
 " FZF
 nmap <C-P> :FZF<CR>
 
+" CoC Stuff
 " Use <c-space> to trigger completion.
 if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
+  inoremap <silent><expr> <c-h> coc#refresh()
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
@@ -77,6 +50,13 @@ endif
 xmap <leader>a <Plug>(coc-codeaction-selected)
 nmap <leader>a <Plug>(coc-codeaction-selected)
 
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+nnoremap <slient> K :call  ShowDocumentation()<CR>
 
 set title
 set bg=light
@@ -103,21 +83,21 @@ set si
 	syntax on
 	set encoding=utf-8
 	set number relativenumber
+
 " Enable autocompletion:
 	set wildmode=longest,list,full
+
 " Disables automatic commenting on newline:
 	autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
 " Perform dot commands over visual blocks:
 	vnoremap . :normal .<CR>
-" Goyo plugin makes text more readable when writing prose:
-	map <leader>f :Goyo \| set bg=light \| set linebreak<CR>
-" Spell-check set to <leader>o, 'o' for 'orthography':
-	map <leader>o :setlocal spell! spelllang=en_us<CR>
 " Splits open at the bottom and right, which is non-retarded, unlike vim defaults.
 	set splitbelow splitright
+
 " Folding
-set foldmethod=syntax
-set foldlevel=99
+	set foldmethod=syntax
+	set foldlevel=99
 
 " Nerd tree
 	map <leader>n :NERDTreeToggle<CR>
@@ -128,17 +108,9 @@ set foldlevel=99
         let NERDTreeBookmarksFile = '~/.vim' . '/NERDTreeBookmarks'
     endif
 
-" Delete word backwards
-nnoremap dw vb"_d
-
-" Tabs
-nmap te :tabedit
-nmap <leader><S-Tab> :tabprev<Return>
-nmap <leader><Tab> :tabnext<Return>
-
 " Splits
-nmap ss :split<Return><C-w>w
-nmap sv :vsplit<Return><C-w>w
+	nmap ss :split<Return><C-w>w
+	nmap sv :vsplit<Return><C-w>w
 
 " vimling:
 	nm <leader><leader>d :call ToggleDeadKeys()<CR>
@@ -153,20 +125,8 @@ nmap sv :vsplit<Return><C-w>w
 	map <C-k> <C-w>k
 	map <C-l> <C-w>l
 
-" Replace ex mode with gq
-	map Q gq
-
-" Check file in shellcheck:
-	map <leader>s :!clear && shellcheck -x %<CR>
-
 " Replace all is aliased to S.
 	nnoremap S :%s//g<Left><Left>
-
-" Compile document, be it groff/LaTeX/markdown/etc.
-	map <leader>c :w! \| !compiler "<c-r>%"<CR>
-
-" Open corresponding .pdf/.html or preview
-	map <leader>p :!opout <c-r>%<CR><CR>
 
 " Save file as sudo on files that require root permission
 	cnoremap w!! execute 'silent! write !sudo tee % >/dev/null' <bar> edit!
